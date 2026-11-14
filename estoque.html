@@ -1,0 +1,937 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#050907" />
+    <title>SAVI | Logística e Estoque</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #050907;
+        --panel: #0a110d;
+        --panel-soft: #0d1711;
+        --line: #1d3828;
+        --green: #6dff9b;
+        --green-soft: #35c96b;
+        --muted: #8ca795;
+        --text: #d7f0df;
+        --amber: #ffce6a;
+        --red: #ff7272;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: radial-gradient(
+          ellipse at 50% -20%,
+          #102218 0,
+          var(--bg) 58%
+        );
+        color: var(--text);
+        font-family: Consolas, "Courier New", monospace;
+        font-size: 14px;
+      }
+
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+
+      .shell {
+        width: min(1440px, 100% - 48px);
+        margin: 0 auto;
+        padding: 28px 0 36px;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        padding: 0 0 22px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .brand-mark {
+        display: grid;
+        place-items: center;
+        width: 43px;
+        height: 43px;
+        border: 1px solid var(--green-soft);
+        color: var(--green);
+        font-size: 20px;
+        box-shadow:
+          inset 0 0 18px #32d76b20,
+          0 0 16px #32d76b15;
+      }
+      .brand-name {
+        color: var(--green);
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+      }
+      .brand-subtitle {
+        margin-top: 5px;
+        color: var(--muted);
+        font-size: 11px;
+        letter-spacing: 0.1em;
+      }
+      .system-status {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--muted);
+        font-size: 11px;
+        text-align: right;
+      }
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--green);
+        box-shadow: 0 0 10px var(--green);
+      }
+
+      .page-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 18px;
+        margin: 30px 0 22px;
+      }
+      .eyebrow {
+        color: var(--green-soft);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+      h1 {
+        margin: 8px 0 0;
+        color: var(--green);
+        font-size: clamp(24px, 4vw, 34px);
+        letter-spacing: 0.04em;
+        font-weight: 600;
+      }
+      .heading-note {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.7;
+        text-align: right;
+      }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 12px;
+      }
+      .metric,
+      .panel {
+        background: linear-gradient(145deg, #0c1510, var(--panel));
+        border: 1px solid var(--line);
+      }
+      .metric {
+        min-height: 112px;
+        padding: 17px 18px;
+        position: relative;
+        overflow: hidden;
+      }
+      .metric::after {
+        position: absolute;
+        content: "";
+        width: 64px;
+        height: 64px;
+        right: -25px;
+        bottom: -30px;
+        border: 1px solid #35c96b25;
+        transform: rotate(45deg);
+      }
+      .metric-label {
+        color: var(--muted);
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .metric-value {
+        margin-top: 13px;
+        color: var(--green);
+        font-size: 30px;
+        font-weight: 700;
+        line-height: 1;
+      }
+      .metric-unit {
+        margin-left: 6px;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 400;
+      }
+      .metric.alert .metric-value {
+        color: var(--amber);
+      }
+      .metric.alert.danger .metric-value {
+        color: var(--red);
+      }
+
+      .main-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.65fr) minmax(300px, 0.85fr);
+        gap: 16px;
+        margin-top: 16px;
+      }
+      .panel {
+        padding: 20px;
+        min-width: 0;
+      }
+      .panel-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 18px;
+      }
+      .panel-title {
+        margin: 0;
+        color: var(--green);
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .panel-caption {
+        color: var(--muted);
+        font-size: 10px;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 570px;
+        text-align: left;
+      }
+      th {
+        padding: 10px 12px;
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 400;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--line);
+      }
+      td {
+        padding: 13px 12px;
+        border-bottom: 1px solid #17271d;
+        color: var(--text);
+        font-size: 12px;
+      }
+      tbody tr:last-child td {
+        border-bottom: 0;
+      }
+      .product-name {
+        color: #e4f8e9;
+      }
+      .stock-cell {
+        min-width: 150px;
+      }
+      .stock-numbers {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 7px;
+        color: var(--muted);
+        font-size: 10px;
+      }
+      .stock-numbers strong {
+        color: var(--text);
+        font-size: 11px;
+        font-weight: 500;
+      }
+      .progress {
+        height: 5px;
+        background: #17271d;
+        overflow: hidden;
+      }
+      .progress > span {
+        display: block;
+        height: 100%;
+        background: var(--green-soft);
+        transition: width 0.25s ease;
+      }
+      .progress > span.low {
+        background: var(--amber);
+      }
+      .progress > span.critical {
+        background: var(--red);
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--green);
+        font-size: 10px;
+        white-space: nowrap;
+      }
+      .badge::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+      }
+      .badge.low {
+        color: var(--amber);
+      }
+      .badge.critical {
+        color: var(--red);
+      }
+
+      .operation-form {
+        display: grid;
+        gap: 14px;
+      }
+      .field label {
+        display: block;
+        margin-bottom: 7px;
+        color: var(--muted);
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .field input,
+      .field select {
+        width: 100%;
+        min-height: 42px;
+        padding: 0 12px;
+        outline: none;
+        color: var(--text);
+        background: #060c08;
+        border: 1px solid #284733;
+      }
+      .field input:focus,
+      .field select:focus {
+        border-color: var(--green-soft);
+        box-shadow: 0 0 0 2px #35c96b19;
+      }
+      .operation-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 9px;
+        margin-top: 2px;
+      }
+      .action-btn {
+        min-height: 42px;
+        border: 1px solid var(--green-soft);
+        background: #102719;
+        color: var(--green);
+        cursor: pointer;
+        transition:
+          background 0.2s,
+          transform 0.2s;
+      }
+      .action-btn:hover {
+        background: #173a24;
+      }
+      .action-btn:active {
+        transform: translateY(1px);
+      }
+      .action-btn.out {
+        border-color: #9c5252;
+        background: #281414;
+        color: #ff8a8a;
+      }
+      .action-btn.out:hover {
+        background: #3a1c1c;
+      }
+      .form-message {
+        min-height: 15px;
+        margin: 0;
+        color: var(--amber);
+        font-size: 11px;
+        line-height: 1.5;
+      }
+
+      .lower-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(300px, 0.85fr);
+        gap: 16px;
+        margin-top: 16px;
+      }
+      .capacity-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 15px;
+        margin: 5px 0 12px;
+      }
+      .capacity-value {
+        color: var(--green);
+        font-size: 27px;
+        font-weight: 700;
+      }
+      .capacity-detail {
+        color: var(--muted);
+        font-size: 11px;
+        text-align: right;
+        line-height: 1.7;
+      }
+      .capacity-bar {
+        height: 9px;
+        background: #17271d;
+        border: 1px solid #233d2c;
+      }
+      .capacity-bar span {
+        display: block;
+        width: 0;
+        height: 100%;
+        background: linear-gradient(90deg, #2b9f53, var(--green));
+        box-shadow: 0 0 12px #6dff9b55;
+        transition: width 0.3s ease;
+      }
+      .capacity-foot {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 9px;
+        color: var(--muted);
+        font-size: 10px;
+      }
+
+      .log-list {
+        display: grid;
+        gap: 0;
+        max-height: 220px;
+        overflow-y: auto;
+      }
+      .log-entry {
+        display: grid;
+        grid-template-columns: 68px 1fr;
+        gap: 10px;
+        padding: 10px 0;
+        border-bottom: 1px solid #17271d;
+        font-size: 11px;
+        line-height: 1.5;
+      }
+      .log-entry:last-child {
+        border-bottom: 0;
+      }
+      .log-time {
+        color: var(--muted);
+      }
+      .log-text {
+        color: var(--text);
+      }
+      .log-text b {
+        color: var(--green);
+        font-weight: 500;
+      }
+      .log-entry.exit .log-text b {
+        color: #ff8a8a;
+      }
+      .log-empty {
+        padding: 15px 0;
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+        margin-top: 18px;
+        padding-top: 13px;
+        color: #637d6b;
+        border-top: 1px solid #14241a;
+        font-size: 10px;
+      }
+
+      @media (max-width: 980px) {
+        .metrics {
+          grid-template-columns: repeat(3, 1fr);
+        }
+        .main-grid,
+        .lower-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 600px) {
+        .shell {
+          width: min(100% - 28px, 1440px);
+          padding-top: 18px;
+        }
+        .topbar {
+          align-items: flex-start;
+        }
+        .system-status {
+          font-size: 9px;
+        }
+        .page-heading {
+          align-items: flex-start;
+          flex-direction: column;
+          margin-top: 23px;
+        }
+        .heading-note {
+          text-align: left;
+        }
+        .metrics {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 9px;
+        }
+        .metric {
+          min-height: 100px;
+          padding: 14px;
+        }
+        .metric-value {
+          font-size: 26px;
+        }
+        .panel {
+          padding: 16px;
+        }
+        footer {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div class="brand" aria-label="Sistema SAVI">
+          <div class="brand-mark" aria-hidden="true">S</div>
+          <div>
+            <div class="brand-name">SAVI</div>
+            <div class="brand-subtitle">
+              SISTEMA DE AUTOMAÇÃO E VISÃO INDUSTRIAL
+            </div>
+          </div>
+        </div>
+        <div class="system-status">
+          <span class="status-dot" aria-hidden="true"></span
+          ><span
+            >SISTEMA OPERACIONAL<br /><span id="clock">--:--:--</span></span
+          >
+        </div>
+      </header>
+
+      <main>
+        <section class="page-heading" aria-labelledby="page-title">
+          <div>
+            <div class="eyebrow">Módulo 03 / Controle operacional</div>
+            <h1 id="page-title">LOGÍSTICA E ESTOQUE</h1>
+          </div>
+          <div class="heading-note">
+            MONITORAMENTO DE MATERIAIS<br />ATUALIZAÇÃO EM TEMPO REAL
+          </div>
+        </section>
+
+        <section class="metrics" aria-label="Indicadores do estoque">
+          <article class="metric">
+            <div class="metric-label">Quantidade em estoque</div>
+            <div class="metric-value">
+              <span id="total-stock">0</span
+              ><span class="metric-unit">un.</span>
+            </div>
+          </article>
+          <article class="metric">
+            <div class="metric-label">Entradas hoje</div>
+            <div class="metric-value">
+              <span id="today-in">0</span><span class="metric-unit">un.</span>
+            </div>
+          </article>
+          <article class="metric">
+            <div class="metric-label">Saídas hoje</div>
+            <div class="metric-value">
+              <span id="today-out">0</span><span class="metric-unit">un.</span>
+            </div>
+          </article>
+          <article class="metric alert" id="critical-card">
+            <div class="metric-label">Produtos críticos</div>
+            <div class="metric-value">
+              <span id="critical-count">0</span
+              ><span class="metric-unit">itens</span>
+            </div>
+          </article>
+          <article class="metric">
+            <div class="metric-label">Capacidade utilizada</div>
+            <div class="metric-value">
+              <span id="capacity-metric">0</span
+              ><span class="metric-unit">%</span>
+            </div>
+          </article>
+        </section>
+
+        <div class="main-grid">
+          <section class="panel" aria-labelledby="inventory-title">
+            <div class="panel-heading">
+              <h2 class="panel-title" id="inventory-title">
+                ▸ Inventário de materiais
+              </h2>
+              <span class="panel-caption" id="product-count"
+                >0 produtos monitorados</span
+              >
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Produto</th>
+                    <th>Quantidade / mínimo</th>
+                    <th>Abastecimento</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="inventory-body"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel" aria-labelledby="operation-title">
+            <div class="panel-heading">
+              <h2 class="panel-title" id="operation-title">
+                ▸ Registrar movimentação
+              </h2>
+              <span class="panel-caption">ENTRADA / SAÍDA</span>
+            </div>
+            <form class="operation-form" id="operation-form">
+              <div class="field">
+                <label for="product-select">Produto</label>
+                <select id="product-select" required></select>
+              </div>
+              <div class="field">
+                <label for="quantity-input">Quantidade</label>
+                <input
+                  id="quantity-input"
+                  type="number"
+                  min="1"
+                  step="1"
+                  placeholder="Ex.: 12"
+                  required
+                />
+              </div>
+              <div class="operation-buttons">
+                <button class="action-btn" type="submit" data-operation="in">
+                  ＋ Entrada
+                </button>
+                <button
+                  class="action-btn out"
+                  type="submit"
+                  data-operation="out"
+                >
+                  − Saída
+                </button>
+              </div>
+              <p
+                class="form-message"
+                id="form-message"
+                role="status"
+                aria-live="polite"
+              ></p>
+            </form>
+          </section>
+        </div>
+
+        <div class="lower-grid">
+          <section class="panel" aria-labelledby="capacity-title">
+            <div class="panel-heading">
+              <h2 class="panel-title" id="capacity-title">
+                ▸ Nível de abastecimento
+              </h2>
+              <span class="panel-caption">CAPACIDADE DO DEPÓSITO</span>
+            </div>
+            <div class="capacity-row">
+              <div class="capacity-value">
+                <span id="capacity-value">0</span>%
+              </div>
+              <div class="capacity-detail">
+                <span id="capacity-amount">0 / 500</span> unidades<br />ocupadas
+                no depósito
+              </div>
+            </div>
+            <div
+              class="capacity-bar"
+              role="progressbar"
+              aria-label="Capacidade utilizada"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="0"
+              id="capacity-progress"
+            >
+              <span id="capacity-fill"></span>
+            </div>
+            <div class="capacity-foot">
+              <span>0%</span
+              ><span id="capacity-remaining">500 unidades disponíveis</span
+              ><span>100%</span>
+            </div>
+          </section>
+
+          <section class="panel" aria-labelledby="log-title">
+            <div class="panel-heading">
+              <h2 class="panel-title" id="log-title">▸ Log de eventos</h2>
+              <span class="panel-caption">MOVIMENTAÇÕES RECENTES</span>
+            </div>
+            <div class="log-list" id="event-log" aria-live="polite"></div>
+          </section>
+        </div>
+      </main>
+
+      <footer>
+        <span>SAVI // CONTROLE DE LOGÍSTICA</span
+        ><span
+          >Dados salvos neste dispositivo ·
+          <span id="last-update">--:--:--</span></span
+        >
+      </footer>
+    </div>
+
+    <script>
+      (() => {
+        const CAPACITY = 500;
+        const STORAGE_KEY = "savi-estoque-v1";
+        const initialProducts = [
+          {
+            id: "sensor",
+            name: "Sensor de proximidade",
+            quantity: 18,
+            minimum: 10,
+            maximum: 40,
+          },
+          {
+            id: "cabo",
+            name: "Cabo de conexão",
+            quantity: 7,
+            minimum: 12,
+            maximum: 50,
+          },
+          {
+            id: "motor",
+            name: "Motor de esteira",
+            quantity: 24,
+            minimum: 8,
+            maximum: 35,
+          },
+          {
+            id: "parafuso",
+            name: "Kit de parafusos",
+            quantity: 120,
+            minimum: 30,
+            maximum: 180,
+          },
+          {
+            id: "rolamento",
+            name: "Rolamento industrial",
+            quantity: 9,
+            minimum: 10,
+            maximum: 45,
+          },
+        ];
+
+        let state;
+        try {
+          const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+          state =
+            saved &&
+            Array.isArray(saved.products) &&
+            Array.isArray(saved.events)
+              ? saved
+              : { products: initialProducts, events: [] };
+        } catch {
+          state = { products: initialProducts, events: [] };
+        }
+
+        const $ = (selector) => document.querySelector(selector);
+        const safeText = (value) =>
+          String(value).replace(
+            /[&<>"']/g,
+            (char) =>
+              ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;",
+              })[char],
+          );
+
+        function save() {
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          } catch {
+            /* armazenamento local indisponível */
+          }
+        }
+
+        function addEvent(type, product, quantity, message) {
+          state.events.unshift({
+            type,
+            product,
+            quantity,
+            message,
+            time: new Date().toISOString(),
+          });
+          state.events = state.events.slice(0, 40);
+        }
+
+        function render() {
+          const total = state.products.reduce(
+            (sum, product) => sum + product.quantity,
+            0,
+          );
+          const critical = state.products.filter(
+            (product) => product.quantity <= product.minimum,
+          ).length;
+          const usedPercent = Math.min(
+            100,
+            Math.round((total / CAPACITY) * 100),
+          );
+          const today = new Date().toDateString();
+          const todayEvents = state.events.filter(
+            (event) => new Date(event.time).toDateString() === today,
+          );
+          const incoming = todayEvents
+            .filter((event) => event.type === "in")
+            .reduce((sum, event) => sum + event.quantity, 0);
+          const outgoing = todayEvents
+            .filter((event) => event.type === "out")
+            .reduce((sum, event) => sum + event.quantity, 0);
+
+          $("#total-stock").textContent = total;
+          $("#today-in").textContent = incoming;
+          $("#today-out").textContent = outgoing;
+          $("#critical-count").textContent = critical;
+          $("#capacity-metric").textContent = usedPercent;
+          $("#capacity-value").textContent = usedPercent;
+          $("#capacity-amount").textContent = `${total} / ${CAPACITY}`;
+          $("#capacity-remaining").textContent =
+            `${Math.max(0, CAPACITY - total)} unidades disponíveis`;
+          $("#capacity-fill").style.width = `${usedPercent}%`;
+          $("#capacity-progress").setAttribute("aria-valuenow", usedPercent);
+          $("#critical-card").classList.toggle("danger", critical > 0);
+          $("#product-count").textContent =
+            `${state.products.length} produtos monitorados`;
+
+          $("#inventory-body").innerHTML = state.products
+            .map((product) => {
+              const percentage = Math.min(
+                100,
+                Math.round((product.quantity / product.maximum) * 100),
+              );
+              const status =
+                product.quantity <= product.minimum
+                  ? "critical"
+                  : product.quantity <= product.minimum * 1.5
+                    ? "low"
+                    : "ok";
+              const label =
+                status === "critical"
+                  ? "CRÍTICO"
+                  : status === "low"
+                    ? "ATENÇÃO"
+                    : "NORMAL";
+              return `<tr>
+                        <td class="product-name">${safeText(product.name)}</td>
+                        <td class="stock-cell"><div class="stock-numbers"><strong>${product.quantity} un.</strong><span>mín. ${product.minimum}</span></div><div class="progress"><span class="${status}" style="width:${percentage}%"></span></div></td>
+                        <td>${percentage}%</td>
+                        <td><span class="badge ${status === "ok" ? "" : status}">${label}</span></td>
+                    </tr>`;
+            })
+            .join("");
+
+          const select = $("#product-select");
+          const selected = select.value;
+          select.innerHTML = state.products
+            .map(
+              (product) =>
+                `<option value="${safeText(product.id)}">${safeText(product.name)}</option>`,
+            )
+            .join("");
+          if (state.products.some((product) => product.id === selected))
+            select.value = selected;
+
+          $("#event-log").innerHTML = state.events.length
+            ? state.events
+                .slice(0, 12)
+                .map((event) => {
+                  const time = new Date(event.time).toLocaleTimeString(
+                    "pt-BR",
+                    { hour: "2-digit", minute: "2-digit", second: "2-digit" },
+                  );
+                  const details = event.message
+                    ? safeText(event.message)
+                    : `<b>${event.type === "in" ? "ENTRADA +" : "SAÍDA −"}${event.quantity}</b> · ${safeText(event.product)}`;
+                  return `<div class="log-entry ${event.type === "out" ? "exit" : ""}"><span class="log-time">${time}</span><span class="log-text">${details}</span></div>`;
+                })
+                .join("")
+            : '<div class="log-empty">Aguardando movimentações de estoque...</div>';
+
+          const now = new Date().toLocaleTimeString("pt-BR");
+          $("#last-update").textContent = now;
+        }
+
+        $("#operation-form").addEventListener("submit", (event) => {
+          event.preventDefault();
+          const operation = event.submitter?.dataset.operation;
+          const product = state.products.find(
+            (item) => item.id === $("#product-select").value,
+          );
+          const quantity = Number($("#quantity-input").value);
+          const message = $("#form-message");
+          message.textContent = "";
+
+          if (!product || !Number.isInteger(quantity) || quantity <= 0) {
+            message.textContent = "Informe um produto e uma quantidade válida.";
+            return;
+          }
+          if (operation === "out" && quantity > product.quantity) {
+            message.textContent = `Saldo insuficiente. Disponível: ${product.quantity} unidades.`;
+            return;
+          }
+          if (
+            operation === "in" &&
+            state.products.reduce((sum, item) => sum + item.quantity, 0) +
+              quantity >
+              CAPACITY
+          ) {
+            message.textContent = `Capacidade excedida. Espaço disponível: ${Math.max(0, CAPACITY - state.products.reduce((sum, item) => sum + item.quantity, 0))} unidades.`;
+            return;
+          }
+
+          product.quantity += operation === "in" ? quantity : -quantity;
+          addEvent(operation, product.name, quantity);
+          save();
+          render();
+          $("#quantity-input").value = "";
+          message.textContent = `${operation === "in" ? "Entrada" : "Saída"} registrada com sucesso.`;
+        });
+
+        function updateClock() {
+          $("#clock").textContent = new Date().toLocaleTimeString("pt-BR");
+        }
+
+        if (!state.events.length) {
+          addEvent(
+            "system",
+            "",
+            0,
+            "Sistema de estoque inicializado. Inventário carregado.",
+          );
+          save();
+        }
+        render();
+        updateClock();
+        window.setInterval(updateClock, 1000);
+        window.setInterval(render, 15000);
+      })();
+    </script>
+  </body>
+</html>
