@@ -1,37 +1,37 @@
 <!doctype html>
 <html lang="pt-BR">
   <head>
+    <!-- Define os caracteres, a adaptação para celular e o nome da página. -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#050907" />
     <title>SAVI | Logística e Estoque</title>
     <style>
+      /* Variáveis de cor: mudar aqui atualiza vários elementos do tema. */
       :root {
         color-scheme: dark;
-        --bg: #050907;
-        --panel: #0a110d;
-        --panel-soft: #0d1711;
-        --line: #1d3828;
-        --green: #6dff9b;
-        --green-soft: #35c96b;
-        --muted: #8ca795;
-        --text: #d7f0df;
+        --bg: #000;
+        --panel: #000;
+        --panel-soft: #020702;
+        --line: #176b17;
+        --green: #39ff14;
+        --green-soft: #28c914;
+        --muted: #48b83a;
+        --text: #c6ffc0;
         --amber: #ffce6a;
         --red: #ff7272;
       }
 
       * {
+        /* Inclui bordas e espaçamentos no cálculo da largura/altura dos elementos. */
         box-sizing: border-box;
       }
 
+      /* Estilo geral da página e cores padrão herdadas pelos elementos. */
       body {
         margin: 0;
         min-height: 100vh;
-        background: radial-gradient(
-          ellipse at 50% -20%,
-          #102218 0,
-          var(--bg) 58%
-        );
+        background: #000;
         color: var(--text);
         font-family: Consolas, "Courier New", monospace;
         font-size: 14px;
@@ -40,16 +40,59 @@
       button,
       input,
       select {
+        /* Mantém os controles do formulário com a mesma fonte do restante da tela. */
         font: inherit;
       }
 
+      /* A moldura que envolve todo o painel, como uma janela de terminal. */
       .shell {
         width: min(1440px, 100% - 48px);
         margin: 0 auto;
-        padding: 28px 0 36px;
+        padding: 0 22px 24px;
+        border: 1px solid var(--line);
+        border-top: 0;
+        background: #000;
+        box-shadow:
+          0 0 24px #18ff1418,
+          inset 0 1px #39ff1412;
       }
 
+      /* Barra superior decorativa que imita a moldura de um terminal. */
+      .terminal-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 37px;
+        margin: 0 -22px 0;
+        padding: 0 14px;
+        background: #020702;
+        border-bottom: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 10px;
+        letter-spacing: 0.06em;
+      }
+      .terminal-light {
+        width: 7px;
+        height: 7px;
+        border: 1px solid #457153;
+        border-radius: 50%;
+      }
+      /* A terceira luz fica acesa para indicar que a sessão está ativa. */
+      .terminal-light.active {
+        background: var(--green-soft);
+        box-shadow: 0 0 8px #35c96b88;
+      }
+      .terminal-path {
+        margin-left: 8px;
+      }
+      .terminal-session {
+        margin-left: auto;
+        color: var(--green-soft);
+      }
+
+      /* Cabeçalho com a marca e o estado atual do sistema. */
       .topbar {
+        padding-top: 20px;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -58,6 +101,7 @@
         border-bottom: 1px solid var(--line);
       }
 
+      /* Organiza o símbolo e o nome do SAVI lado a lado. */
       .brand {
         display: flex;
         align-items: center;
@@ -68,12 +112,12 @@
         place-items: center;
         width: 43px;
         height: 43px;
-        border: 1px solid var(--green-soft);
+        border: 1px solid var(--green);
         color: var(--green);
         font-size: 20px;
         box-shadow:
-          inset 0 0 18px #32d76b20,
-          0 0 16px #32d76b15;
+          inset 0 0 18px #39ff1420,
+          0 0 16px #39ff1415;
       }
       .brand-name {
         color: var(--green);
@@ -95,6 +139,7 @@
         font-size: 11px;
         text-align: right;
       }
+      /* Indicador visual de que o sistema está ligado. */
       .status-dot {
         width: 8px;
         height: 8px;
@@ -103,6 +148,7 @@
         box-shadow: 0 0 10px var(--green);
       }
 
+      /* Título da página e informações secundárias do módulo. */
       .page-heading {
         display: flex;
         justify-content: space-between;
@@ -123,6 +169,15 @@
         letter-spacing: 0.04em;
         font-weight: 600;
       }
+      /* O prompt é desenhado pelo CSS antes do título, sem estar no HTML. */
+      h1::before {
+        content: "root@savi:~$ ";
+        color: var(--muted);
+        font-size: 0.48em;
+        font-weight: 400;
+        letter-spacing: 0;
+        vertical-align: 0.22em;
+      }
       .heading-note {
         color: var(--muted);
         font-size: 12px;
@@ -130,15 +185,17 @@
         text-align: right;
       }
 
+      /* Grade dos cartões com números-resumo do estoque. */
       .metrics {
         display: grid;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 12px;
       }
       .metric,
       .panel {
-        background: linear-gradient(145deg, #0c1510, var(--panel));
+        background: #000;
         border: 1px solid var(--line);
+        box-shadow: inset 0 1px #39ff140c;
       }
       .metric {
         min-height: 112px;
@@ -182,6 +239,7 @@
         color: var(--red);
       }
 
+      /* Área principal: inventário à esquerda e formulário à direita. */
       .main-grid {
         display: grid;
         grid-template-columns: minmax(0, 1.65fr) minmax(300px, 0.85fr);
@@ -212,6 +270,7 @@
         font-size: 10px;
       }
 
+      /* Tabela de produtos e barras que representam o nível de estoque. */
       .table-wrap {
         overflow-x: auto;
       }
@@ -275,6 +334,7 @@
       .progress > span.critical {
         background: var(--red);
       }
+      /* Aparência dos rótulos NORMAL, ATENÇÃO e CRÍTICO. */
       .badge {
         display: inline-flex;
         align-items: center;
@@ -297,6 +357,7 @@
         color: var(--red);
       }
 
+      /* Formulário usado para registrar entrada ou saída de produtos. */
       .operation-form {
         display: grid;
         gap: 14px;
@@ -316,8 +377,10 @@
         padding: 0 12px;
         outline: none;
         color: var(--text);
-        background: #060c08;
-        border: 1px solid #284733;
+        background: #000;
+        border: 1px solid #176b17;
+        border-radius: 0;
+        font-family: inherit;
       }
       .field input:focus,
       .field select:focus {
@@ -336,6 +399,8 @@
         background: #102719;
         color: var(--green);
         cursor: pointer;
+        font-weight: 600;
+        letter-spacing: 0.02em;
         transition:
           background 0.2s,
           transform 0.2s;
@@ -346,6 +411,7 @@
       .action-btn:active {
         transform: translateY(1px);
       }
+      /* Diferencia o botão de saída, que reduz o estoque. */
       .action-btn.out {
         border-color: #9c5252;
         background: #281414;
@@ -362,6 +428,7 @@
         line-height: 1.5;
       }
 
+      /* Parte inferior: capacidade do depósito e histórico de eventos. */
       .lower-grid {
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(300px, 0.85fr);
@@ -386,17 +453,18 @@
         text-align: right;
         line-height: 1.7;
       }
+      /* Barra gráfica que acompanha a porcentagem de ocupação do depósito. */
       .capacity-bar {
         height: 9px;
-        background: #17271d;
-        border: 1px solid #233d2c;
+        background: #020702;
+        border: 1px solid var(--line);
       }
       .capacity-bar span {
         display: block;
         width: 0;
         height: 100%;
-        background: linear-gradient(90deg, #2b9f53, var(--green));
-        box-shadow: 0 0 12px #6dff9b55;
+        background: var(--green);
+        box-shadow: 0 0 12px #39ff1455;
         transition: width 0.3s ease;
       }
       .capacity-foot {
@@ -407,6 +475,7 @@
         font-size: 10px;
       }
 
+      /* Lista de operações recentes; pode rolar se houver muitos registros. */
       .log-list {
         display: grid;
         gap: 0;
@@ -455,22 +524,30 @@
         font-size: 10px;
       }
 
+      /* Em telas menores, empilha os painéis para evitar conteúdo apertado. */
       @media (max-width: 980px) {
         .metrics {
-          grid-template-columns: repeat(3, 1fr);
+          grid-template-columns: repeat(4, 1fr);
         }
         .main-grid,
         .lower-grid {
           grid-template-columns: 1fr;
         }
       }
+      /* Ajustes específicos para celulares. */
       @media (max-width: 600px) {
         .shell {
           width: min(100% - 28px, 1440px);
-          padding-top: 18px;
+          padding: 0 12px 18px;
+        }
+        .terminal-bar {
+          margin-right: -12px;
+          margin-left: -12px;
+          font-size: 9px;
         }
         .topbar {
           align-items: flex-start;
+          padding-top: 17px;
         }
         .system-status {
           font-size: 9px;
@@ -504,14 +581,22 @@
     </style>
   </head>
   <body>
+    <!-- Contêiner visual de toda a interface. -->
     <div class="shell">
+      <div class="terminal-bar" aria-hidden="true">
+        <span class="terminal-light"></span>
+        <span class="terminal-light"></span>
+        <span class="terminal-light active"></span>
+        <span class="terminal-path">SAVI_TERMINAL / estoque</span>
+        <span class="terminal-session">SESSION: LOCAL</span>
+      </div>
       <header class="topbar">
         <div class="brand" aria-label="Sistema SAVI">
           <div class="brand-mark" aria-hidden="true">S</div>
           <div>
             <div class="brand-name">SAVI</div>
             <div class="brand-subtitle">
-              SISTEMA DE AUTOMAÇÃO E VISÃO INDUSTRIAL
+              AUTOMAÇÃO POR VOZ E IoT · INDÚSTRIA 4.0
             </div>
           </div>
         </div>
@@ -524,9 +609,10 @@
       </header>
 
       <main>
+        <!-- Cabeçalho do módulo. -->
         <section class="page-heading" aria-labelledby="page-title">
           <div>
-            <div class="eyebrow">Módulo 03 / Controle operacional</div>
+            <div class="eyebrow">Feira Tecnológica 2026 / Módulo 03</div>
             <h1 id="page-title">LOGÍSTICA E ESTOQUE</h1>
           </div>
           <div class="heading-note">
@@ -534,6 +620,7 @@
           </div>
         </section>
 
+        <!-- Os valores começam em zero e o JavaScript os atualiza. -->
         <section class="metrics" aria-label="Indicadores do estoque">
           <article class="metric">
             <div class="metric-label">Quantidade em estoque</div>
@@ -568,8 +655,29 @@
               ><span class="metric-unit">%</span>
             </div>
           </article>
+          <article class="metric">
+            <div class="metric-label">Produtos monitorados</div>
+            <div class="metric-value">
+              <span id="sku-count">0</span><span class="metric-unit">SKUs</span>
+            </div>
+          </article>
+          <article class="metric">
+            <div class="metric-label">Abastecimento médio</div>
+            <div class="metric-value">
+              <span id="average-stock">0</span
+              ><span class="metric-unit">%</span>
+            </div>
+          </article>
+          <article class="metric">
+            <div class="metric-label">Movimentações hoje</div>
+            <div class="metric-value">
+              <span id="movement-count">0</span
+              ><span class="metric-unit">op.</span>
+            </div>
+          </article>
         </section>
 
+        <!-- Inventário e operações de entrada/saída. -->
         <div class="main-grid">
           <section class="panel" aria-labelledby="inventory-title">
             <div class="panel-heading">
@@ -580,6 +688,7 @@
                 >0 produtos monitorados</span
               >
             </div>
+            <!-- O JavaScript cria uma linha por produto dentro deste tbody. -->
             <div class="table-wrap">
               <table>
                 <thead>
@@ -602,6 +711,7 @@
               </h2>
               <span class="panel-caption">ENTRADA / SAÍDA</span>
             </div>
+            <!-- Os botões submetem o formulário e informam o tipo da operação. -->
             <form class="operation-form" id="operation-form">
               <div class="field">
                 <label for="product-select">Produto</label>
@@ -640,6 +750,7 @@
           </section>
         </div>
 
+        <!-- Resumo da capacidade e registro das movimentações. -->
         <div class="lower-grid">
           <section class="panel" aria-labelledby="capacity-title">
             <div class="panel-heading">
@@ -657,6 +768,7 @@
                 no depósito
               </div>
             </div>
+            <!-- A largura do preenchimento é calculada e atualizada pelo JavaScript. -->
             <div
               class="capacity-bar"
               role="progressbar"
@@ -677,9 +789,10 @@
 
           <section class="panel" aria-labelledby="log-title">
             <div class="panel-heading">
-              <h2 class="panel-title" id="log-title">▸ Log de eventos</h2>
+              <h2 class="panel-title" id="log-title">▸ LOG DE EVENTOS</h2>
               <span class="panel-caption">MOVIMENTAÇÕES RECENTES</span>
             </div>
+            <!-- O JavaScript preenche este histórico com os eventos salvos. -->
             <div class="log-list" id="event-log" aria-live="polite"></div>
           </section>
         </div>
@@ -695,9 +808,13 @@
     </div>
 
     <script>
+      // Função autoexecutável: mantém as variáveis do programa dentro deste escopo.
       (() => {
+        // Limite físico do depósito e chave usada para salvar os dados no navegador.
         const CAPACITY = 500;
         const STORAGE_KEY = "savi-estoque-v1";
+
+        // Dados iniciais usados apenas quando ainda não existe estoque salvo.
         const initialProducts = [
           {
             id: "sensor",
@@ -736,6 +853,7 @@
           },
         ];
 
+        // Tenta recuperar os dados anteriores; se não conseguir, usa os valores iniciais.
         let state;
         try {
           const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
@@ -746,10 +864,14 @@
               ? saved
               : { products: initialProducts, events: [] };
         } catch {
+          // JSON inválido ou armazenamento indisponível: inicia com os produtos padrão.
           state = { products: initialProducts, events: [] };
         }
 
+        // Atalho: $("#clock") equivale a document.querySelector("#clock").
         const $ = (selector) => document.querySelector(selector);
+
+        // Escapa caracteres especiais para que textos não sejam interpretados como HTML.
         const safeText = (value) =>
           String(value).replace(
             /[&<>"']/g,
@@ -765,6 +887,7 @@
 
         function save() {
           try {
+            // JSON transforma o objeto do estoque em texto para o localStorage.
             localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
           } catch {
             /* armazenamento local indisponível */
@@ -772,6 +895,7 @@
         }
 
         function addEvent(type, product, quantity, message) {
+          // unshift coloca o registro novo no começo; slice limita o histórico a 40 eventos.
           state.events.unshift({
             type,
             product,
@@ -783,6 +907,7 @@
         }
 
         function render() {
+          // reduce soma quantidades; filter seleciona produtos que atingiram o mínimo.
           const total = state.products.reduce(
             (sum, product) => sum + product.quantity,
             0,
@@ -794,6 +919,18 @@
             100,
             Math.round((total / CAPACITY) * 100),
           );
+          const averageStock = state.products.length
+            ? Math.round(
+                (state.products.reduce(
+                  (sum, product) => sum + product.quantity / product.maximum,
+                  0,
+                ) /
+                  state.products.length) *
+                  100,
+              )
+            : 0;
+
+          // Separa as operações de hoje para calcular entradas, saídas e quantidade de ações.
           const today = new Date().toDateString();
           const todayEvents = state.events.filter(
             (event) => new Date(event.time).toDateString() === today,
@@ -804,12 +941,19 @@
           const outgoing = todayEvents
             .filter((event) => event.type === "out")
             .reduce((sum, event) => sum + event.quantity, 0);
+          const movementCount = todayEvents.filter(
+            (event) => event.type === "in" || event.type === "out",
+          ).length;
 
+          // Atualiza os números da tela sem recarregar a página.
           $("#total-stock").textContent = total;
           $("#today-in").textContent = incoming;
           $("#today-out").textContent = outgoing;
           $("#critical-count").textContent = critical;
           $("#capacity-metric").textContent = usedPercent;
+          $("#sku-count").textContent = state.products.length;
+          $("#average-stock").textContent = averageStock;
+          $("#movement-count").textContent = movementCount;
           $("#capacity-value").textContent = usedPercent;
           $("#capacity-amount").textContent = `${total} / ${CAPACITY}`;
           $("#capacity-remaining").textContent =
@@ -820,12 +964,14 @@
           $("#product-count").textContent =
             `${state.products.length} produtos monitorados`;
 
+          // Cria as linhas da tabela a partir dos produtos que estão no estado.
           $("#inventory-body").innerHTML = state.products
             .map((product) => {
               const percentage = Math.min(
                 100,
                 Math.round((product.quantity / product.maximum) * 100),
               );
+              // Define a cor/situação comparando a quantidade com o mínimo configurado.
               const status =
                 product.quantity <= product.minimum
                   ? "critical"
@@ -847,6 +993,7 @@
             })
             .join("");
 
+          // Recria as opções do seletor e tenta manter o produto que já estava selecionado.
           const select = $("#product-select");
           const selected = select.value;
           select.innerHTML = state.products
@@ -858,6 +1005,7 @@
           if (state.products.some((product) => product.id === selected))
             select.value = selected;
 
+          // Mostra até 12 eventos recentes ou uma mensagem quando o histórico está vazio.
           $("#event-log").innerHTML = state.events.length
             ? state.events
                 .slice(0, 12)
@@ -878,7 +1026,9 @@
           $("#last-update").textContent = now;
         }
 
+        // Executa esta função quando a pessoa registra uma entrada ou uma saída.
         $("#operation-form").addEventListener("submit", (event) => {
+          // Impede o comportamento padrão do formulário, que recarregaria a página.
           event.preventDefault();
           const operation = event.submitter?.dataset.operation;
           const product = state.products.find(
@@ -888,6 +1038,7 @@
           const message = $("#form-message");
           message.textContent = "";
 
+          // Validações evitam quantidade inválida, estoque negativo e depósito acima do limite.
           if (!product || !Number.isInteger(quantity) || quantity <= 0) {
             message.textContent = "Informe um produto e uma quantidade válida.";
             return;
@@ -906,6 +1057,7 @@
             return;
           }
 
+          // Entrada soma; saída subtrai. Depois registra, salva e redesenha os dados.
           product.quantity += operation === "in" ? quantity : -quantity;
           addEvent(operation, product.name, quantity);
           save();
@@ -915,9 +1067,11 @@
         });
 
         function updateClock() {
+          // Atualiza o relógio no formato local do navegador (pt-BR).
           $("#clock").textContent = new Date().toLocaleTimeString("pt-BR");
         }
 
+        // Cria um evento inicial somente quando ainda não há histórico salvo.
         if (!state.events.length) {
           addEvent(
             "system",
@@ -927,6 +1081,7 @@
           );
           save();
         }
+        // Primeira atualização da interface e atualizações periódicas de relógio/dados.
         render();
         updateClock();
         window.setInterval(updateClock, 1000);
